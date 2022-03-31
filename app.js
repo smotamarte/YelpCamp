@@ -44,15 +44,19 @@ app.get('/campgrounds', async (req, res) => {
 });
 
 // add new campground
-app.get('/campgrounds/new', (req, res) => {
+app.get('/campgrounds/new', (req, res, next) => {
     res.render('campgrounds/new');
 });
 
 // logic to save new campground
-app.post('/campgrounds', async (req, res) => {
-    const campground = new Campground(req.body.campground);
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`)
+app.post('/campgrounds', async (req, res, next) => {
+    try {
+        const campground = new Campground(req.body.campground);
+        await campground.save();
+        res.redirect(`/campgrounds/${campground._id}`)
+    } catch (e) {
+        next(e);
+    }
 });
 
 // show campground in detail
@@ -89,6 +93,10 @@ app.delete('/campgrounds/:id', async (req, res) => {
     } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds')
+});
+
+app.use((err, req, res, next) => {
+    res.send('Oh boy, something went wrong!')
 });
 
 app.listen(5500, () => {
